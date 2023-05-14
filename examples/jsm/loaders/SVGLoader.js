@@ -1010,7 +1010,7 @@ class SVGLoader extends Loader {
 
 				if ( node.hasAttribute( svgName ) ) style[ jsName ] = adjustFunction( node.getAttribute( svgName ) );
 				if ( stylesheetStyles[ svgName ] ) style[ jsName ] = adjustFunction( stylesheetStyles[ svgName ] );
-				if ( node.style && node.style[ svgName ] !== '' ) style[ jsName ] = adjustFunction( node.style[ svgName ] );
+				if ( node.style && node.style[ svgName ] ) style[ jsName ] = adjustFunction( node.style[ svgName ] );
 
 			}
 
