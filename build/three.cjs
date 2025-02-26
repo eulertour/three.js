@@ -4334,6 +4334,12 @@ class Vector3 {
 
 	}
 
+	rotate90() {
+
+		return this.applyAxisAngle( Vector3.OUT, Math.PI / 2 );
+
+	}
+
 	angleTo( v ) {
 
 		const denominator = Math.sqrt( this.lengthSq() * v.lengthSq() );
@@ -4534,6 +4540,14 @@ class Vector3 {
 
 const _vector$c = /*@__PURE__*/ new Vector3();
 const _quaternion$4 = /*@__PURE__*/ new Quaternion();
+
+Vector3.ORIGIN = Object.freeze( new Vector3( 0, 0, 0 ) );
+Vector3.LEFT = Object.freeze( new Vector3( -1, 0, 0 ) );
+Vector3.RIGHT = Object.freeze( new Vector3( 1, 0, 0 ) );
+Vector3.DOWN = Object.freeze( new Vector3( 0, -1, 0 ) );
+Vector3.UP = Object.freeze( new Vector3( 0, 1, 0 ) );
+Vector3.IN = Object.freeze( new Vector3( 0, 0, -1 ) );
+Vector3.OUT = Object.freeze( new Vector3( 0, 0, 1 ) );
 
 class Box3 {
 
