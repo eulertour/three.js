@@ -1046,6 +1046,55 @@ class Object3D extends EventDispatcher {
 
 	}
 
+	vspace( distanceBetween = 0 ) {
+
+		const group = this;
+		if ( group.children.length < 2 ) return group;
+
+		const defaultBuffer = 0.2;
+		let defaultSpacing = Number.NEGATIVE_INFINITY;
+		for ( let i = 1; i < group.children.length; i ++ ) {
+
+			const previous = group.children[ i - 1 ];
+			const previousLowest = furthestInDirection( previous, DOWN );
+			const distanceToBottom = new THREE.Vector3()
+				.subVectors( previousLowest, previous.position )
+				.dot( DOWN );
+
+			const current = group.children[ i ];
+			const currentTop = furthestInDirection( current, UP );
+			const distanceToTop = new THREE.Vector3()
+				.subVectors( currentTop, current.position )
+				.dot( UP );
+
+			defaultSpacing = Math.max(
+				defaultSpacing,
+				distanceToBottom + distanceToTop + defaultBuffer
+			);
+
+		}
+
+		const center = group.children[ 0 ].position.clone();
+		for ( let i = 1; i < group.children.length; i ++ ) {
+
+			const previous = group.children[ i - 1 ];
+			const current = group.children[ i ];
+			current.position
+				.copy( previous.position )
+				.addScaledVector(
+					DOWN,
+					distanceBetween ? distanceBetween : defaultSpacing
+				);
+			center.add( group.children[ i ].position );
+
+		}
+
+		center.divideScalar( group.children.length );
+
+		group.children.forEach( ( child ) => child.position.sub( center ) );
+
+	}
+
 }
 
 Object3D.DEFAULT_UP = /*@__PURE__*/ new Vector3( 0, 1, 0 );

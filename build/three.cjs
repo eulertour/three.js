@@ -7215,29 +7215,29 @@ class Object3D extends EventDispatcher {
 			position: {
 				configurable: true,
 				enumerable: true,
-				value: position
+				value: position,
 			},
 			rotation: {
 				configurable: true,
 				enumerable: true,
-				value: rotation
+				value: rotation,
 			},
 			quaternion: {
 				configurable: true,
 				enumerable: true,
-				value: quaternion
+				value: quaternion,
 			},
 			scale: {
 				configurable: true,
 				enumerable: true,
-				value: scale
+				value: scale,
 			},
 			modelViewMatrix: {
-				value: new Matrix4()
+				value: new Matrix4(),
 			},
 			normalMatrix: {
-				value: new Matrix3()
-			}
+				value: new Matrix3(),
+			},
 		} );
 
 		this.matrix = new Matrix4();
@@ -7469,7 +7469,10 @@ class Object3D extends EventDispatcher {
 
 		if ( object === this ) {
 
-			console.error( 'THREE.Object3D.add: object can\'t be added as a child of itself.', object );
+			console.error(
+				'THREE.Object3D.add: object can\'t be added as a child of itself.',
+				object
+			);
 			return this;
 
 		}
@@ -7493,7 +7496,10 @@ class Object3D extends EventDispatcher {
 
 		} else {
 
-			console.error( 'THREE.Object3D.add: object not an instance of THREE.Object3D.', object );
+			console.error(
+				'THREE.Object3D.add: object not an instance of THREE.Object3D.',
+				object
+			);
 
 		}
 
@@ -7550,7 +7556,7 @@ class Object3D extends EventDispatcher {
 
 	clear() {
 
-		return this.remove( ... this.children );
+		return this.remove( ...this.children );
 
 	}
 
@@ -7767,7 +7773,11 @@ class Object3D extends EventDispatcher {
 
 		const parent = this.parent;
 
-		if ( updateParents === true && parent !== null && parent.matrixWorldAutoUpdate === true ) {
+		if (
+			updateParents === true &&
+			parent !== null &&
+			parent.matrixWorldAutoUpdate === true
+		) {
 
 			parent.updateWorldMatrix( true, false );
 
@@ -7810,7 +7820,7 @@ class Object3D extends EventDispatcher {
 	toJSON( meta ) {
 
 		// meta is a string when called from JSON.stringify
-		const isRootObject = ( meta === undefined || typeof meta === 'string' );
+		const isRootObject = meta === undefined || typeof meta === 'string';
 
 		const output = {};
 
@@ -7828,13 +7838,13 @@ class Object3D extends EventDispatcher {
 				shapes: {},
 				skeletons: {},
 				animations: {},
-				nodes: {}
+				nodes: {},
 			};
 
 			output.metadata = {
 				version: 4.6,
 				type: 'Object',
-				generator: 'Object3D.toJSON'
+				generator: 'Object3D.toJSON',
 			};
 
 		}
@@ -7867,7 +7877,8 @@ class Object3D extends EventDispatcher {
 			object.type = 'InstancedMesh';
 			object.count = this.count;
 			object.instanceMatrix = this.instanceMatrix.toJSON();
-			if ( this.instanceColor !== null ) object.instanceColor = this.instanceColor.toJSON();
+			if ( this.instanceColor !== null )
+				object.instanceColor = this.instanceColor.toJSON();
 
 		}
 
@@ -7882,14 +7893,14 @@ class Object3D extends EventDispatcher {
 
 			object.visibility = this._visibility;
 			object.active = this._active;
-			object.bounds = this._bounds.map( bound => ( {
+			object.bounds = this._bounds.map( ( bound ) => ( {
 				boxInitialized: bound.boxInitialized,
 				boxMin: bound.box.min.toArray(),
 				boxMax: bound.box.max.toArray(),
 
 				sphereInitialized: bound.sphereInitialized,
 				sphereRadius: bound.sphere.radius,
-				sphereCenter: bound.sphere.center.toArray()
+				sphereCenter: bound.sphere.center.toArray(),
 			} ) );
 
 			object.maxGeometryCount = this._maxGeometryCount;
@@ -7905,7 +7916,7 @@ class Object3D extends EventDispatcher {
 
 				object.boundingSphere = {
 					center: object.boundingSphere.center.toArray(),
-					radius: object.boundingSphere.radius
+					radius: object.boundingSphere.radius,
 				};
 
 			}
@@ -7914,7 +7925,7 @@ class Object3D extends EventDispatcher {
 
 				object.boundingBox = {
 					min: object.boundingBox.min.toArray(),
-					max: object.boundingBox.max.toArray()
+					max: object.boundingBox.max.toArray(),
 				};
 
 			}
@@ -7951,7 +7962,11 @@ class Object3D extends EventDispatcher {
 
 			}
 
-			if ( this.environment && this.environment.isTexture && this.environment.isRenderTargetTexture !== true ) {
+			if (
+				this.environment &&
+				this.environment.isTexture &&
+				this.environment.isRenderTargetTexture !== true
+			) {
 
 				object.environment = this.environment.toJSON( meta ).uuid;
 
@@ -8150,6 +8165,76 @@ class Object3D extends EventDispatcher {
 		}
 
 		return this;
+
+	}
+
+	vstack( buffer = 0.2 ) {
+
+		const group = this;
+		if ( group.children.length < 2 ) return group;
+
+		const center = group.children[ 0 ].position.clone();
+		for ( let i = 1; i < group.children.length; i ++ ) {
+
+			group.children[ i ].position
+				.copy( group.children[ i - 1 ].position )
+				.addScaledVector( DOWN, buffer );
+			center.add( group.children[ i ].position );
+
+		}
+
+		center.divideScalar( group.children.length );
+
+		group.children.forEach( ( child ) => child.position.sub( center ) );
+
+	}
+
+	vspace( distanceBetween = 0 ) {
+
+		const group = this;
+		if ( group.children.length < 2 ) return group;
+
+		const defaultBuffer = 0.2;
+		let defaultSpacing = Number.NEGATIVE_INFINITY;
+		for ( let i = 1; i < group.children.length; i ++ ) {
+
+			const previous = group.children[ i - 1 ];
+			const previousLowest = furthestInDirection( previous, DOWN );
+			const distanceToBottom = new THREE.Vector3()
+				.subVectors( previousLowest, previous.position )
+				.dot( DOWN );
+
+			const current = group.children[ i ];
+			const currentTop = furthestInDirection( current, UP );
+			const distanceToTop = new THREE.Vector3()
+				.subVectors( currentTop, current.position )
+				.dot( UP );
+
+			defaultSpacing = Math.max(
+				defaultSpacing,
+				distanceToBottom + distanceToTop + defaultBuffer
+			);
+
+		}
+
+		const center = group.children[ 0 ].position.clone();
+		for ( let i = 1; i < group.children.length; i ++ ) {
+
+			const previous = group.children[ i - 1 ];
+			const current = group.children[ i ];
+			current.position
+				.copy( previous.position )
+				.addScaledVector(
+					DOWN,
+					distanceBetween ? distanceBetween : defaultSpacing
+				);
+			center.add( group.children[ i ].position );
+
+		}
+
+		center.divideScalar( group.children.length );
+
+		group.children.forEach( ( child ) => child.position.sub( center ) );
 
 	}
 
