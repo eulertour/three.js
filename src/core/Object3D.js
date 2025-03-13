@@ -1046,52 +1046,73 @@ class Object3D extends EventDispatcher {
 
 	}
 
-	vspace( distanceBetween = 0 ) {
+	setScale( factor ) {
 
-		const group = this;
-		if ( group.children.length < 2 ) return group;
+		this.scale.x = factor;
+		this.scale.y = factor;
+		return this;
 
-		const defaultBuffer = 0.2;
-		let defaultSpacing = Number.NEGATIVE_INFINITY;
-		for ( let i = 1; i < group.children.length; i ++ ) {
+	}
 
-			const previous = group.children[ i - 1 ];
-			const previousLowest = furthestInDirection( previous, DOWN );
-			const distanceToBottom = new THREE.Vector3()
-				.subVectors( previousLowest, previous.position )
-				.dot( DOWN );
+	setOpacity( opacity, config = null ) {
 
-			const current = group.children[ i ];
-			const currentTop = furthestInDirection( current, UP );
-			const distanceToTop = new THREE.Vector3()
-				.subVectors( currentTop, current.position )
-				.dot( UP );
+		let family = true;
+		if ( config && config.family === false ) {
 
-			defaultSpacing = Math.max(
-				defaultSpacing,
-				distanceToBottom + distanceToTop + defaultBuffer
-			);
+			family = false;
 
 		}
 
-		const center = group.children[ 0 ].position.clone();
-		for ( let i = 1; i < group.children.length; i ++ ) {
+		if ( family ) {
 
-			const previous = group.children[ i - 1 ];
-			const current = group.children[ i ];
-			current.position
-				.copy( previous.position )
-				.addScaledVector(
-					DOWN,
-					distanceBetween ? distanceBetween : defaultSpacing
-				);
-			center.add( group.children[ i ].position );
+			this.traverse( ( child ) => {
+
+				if ( child instanceof THREE.Mesh ) {
+
+					child.material.opacity = opacity;
+
+				}
+
+			} );
+
+		} else {
+
+			[ this.stroke, this.fill ].forEach( ( mesh ) => {
+
+				if ( ! mesh ) return;
+				mesh.material.opacity = opacity;
+
+			} );
 
 		}
 
-		center.divideScalar( group.children.length );
+		return this;
 
-		group.children.forEach( ( child ) => child.position.sub( center ) );
+	}
+
+	setInvisible( config = null ) {
+
+		let family = true;
+		if ( config && config.family === false ) {
+
+			family = false;
+
+		}
+
+		return this.setOpacity( 0, { family } );
+
+	}
+
+	setVisible( config = null ) {
+
+		let family = true;
+		if ( config && config.family === false ) {
+
+			family = false;
+
+		}
+
+		return this.setOpacity( 1, { family } );
 
 	}
 
