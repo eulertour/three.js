@@ -73,29 +73,29 @@ class Object3D extends EventDispatcher {
 			position: {
 				configurable: true,
 				enumerable: true,
-				value: position
+				value: position,
 			},
 			rotation: {
 				configurable: true,
 				enumerable: true,
-				value: rotation
+				value: rotation,
 			},
 			quaternion: {
 				configurable: true,
 				enumerable: true,
-				value: quaternion
+				value: quaternion,
 			},
 			scale: {
 				configurable: true,
 				enumerable: true,
-				value: scale
+				value: scale,
 			},
 			modelViewMatrix: {
-				value: new Matrix4()
+				value: new Matrix4(),
 			},
 			normalMatrix: {
-				value: new Matrix3()
-			}
+				value: new Matrix3(),
+			},
 		} );
 
 		this.matrix = new Matrix4();
@@ -351,7 +351,10 @@ class Object3D extends EventDispatcher {
 
 		if ( object === this ) {
 
-			console.error( 'THREE.Object3D.add: object can\'t be added as a child of itself.', object );
+			console.error(
+				'THREE.Object3D.add: object can\'t be added as a child of itself.',
+				object
+			);
 			return this;
 
 		}
@@ -375,7 +378,10 @@ class Object3D extends EventDispatcher {
 
 		} else {
 
-			console.error( 'THREE.Object3D.add: object not an instance of THREE.Object3D.', object );
+			console.error(
+				'THREE.Object3D.add: object not an instance of THREE.Object3D.',
+				object
+			);
 
 		}
 
@@ -432,7 +438,7 @@ class Object3D extends EventDispatcher {
 
 	clear() {
 
-		return this.remove( ... this.children );
+		return this.remove( ...this.children );
 
 	}
 
@@ -649,7 +655,11 @@ class Object3D extends EventDispatcher {
 
 		const parent = this.parent;
 
-		if ( updateParents === true && parent !== null && parent.matrixWorldAutoUpdate === true ) {
+		if (
+			updateParents === true &&
+			parent !== null &&
+			parent.matrixWorldAutoUpdate === true
+		) {
 
 			parent.updateWorldMatrix( true, false );
 
@@ -692,7 +702,7 @@ class Object3D extends EventDispatcher {
 	toJSON( meta ) {
 
 		// meta is a string when called from JSON.stringify
-		const isRootObject = ( meta === undefined || typeof meta === 'string' );
+		const isRootObject = meta === undefined || typeof meta === 'string';
 
 		const output = {};
 
@@ -710,13 +720,13 @@ class Object3D extends EventDispatcher {
 				shapes: {},
 				skeletons: {},
 				animations: {},
-				nodes: {}
+				nodes: {},
 			};
 
 			output.metadata = {
 				version: 4.6,
 				type: 'Object',
-				generator: 'Object3D.toJSON'
+				generator: 'Object3D.toJSON',
 			};
 
 		}
@@ -749,7 +759,8 @@ class Object3D extends EventDispatcher {
 			object.type = 'InstancedMesh';
 			object.count = this.count;
 			object.instanceMatrix = this.instanceMatrix.toJSON();
-			if ( this.instanceColor !== null ) object.instanceColor = this.instanceColor.toJSON();
+			if ( this.instanceColor !== null )
+				object.instanceColor = this.instanceColor.toJSON();
 
 		}
 
@@ -764,14 +775,14 @@ class Object3D extends EventDispatcher {
 
 			object.visibility = this._visibility;
 			object.active = this._active;
-			object.bounds = this._bounds.map( bound => ( {
+			object.bounds = this._bounds.map( ( bound ) => ( {
 				boxInitialized: bound.boxInitialized,
 				boxMin: bound.box.min.toArray(),
 				boxMax: bound.box.max.toArray(),
 
 				sphereInitialized: bound.sphereInitialized,
 				sphereRadius: bound.sphere.radius,
-				sphereCenter: bound.sphere.center.toArray()
+				sphereCenter: bound.sphere.center.toArray(),
 			} ) );
 
 			object.maxGeometryCount = this._maxGeometryCount;
@@ -787,7 +798,7 @@ class Object3D extends EventDispatcher {
 
 				object.boundingSphere = {
 					center: object.boundingSphere.center.toArray(),
-					radius: object.boundingSphere.radius
+					radius: object.boundingSphere.radius,
 				};
 
 			}
@@ -796,7 +807,7 @@ class Object3D extends EventDispatcher {
 
 				object.boundingBox = {
 					min: object.boundingBox.min.toArray(),
-					max: object.boundingBox.max.toArray()
+					max: object.boundingBox.max.toArray(),
 				};
 
 			}
@@ -833,7 +844,11 @@ class Object3D extends EventDispatcher {
 
 			}
 
-			if ( this.environment && this.environment.isTexture && this.environment.isRenderTargetTexture !== true ) {
+			if (
+				this.environment &&
+				this.environment.isTexture &&
+				this.environment.isRenderTargetTexture !== true
+			) {
 
 				object.environment = this.environment.toJSON( meta ).uuid;
 
@@ -1031,6 +1046,186 @@ class Object3D extends EventDispatcher {
 
 		}
 
+		return this;
+
+	}
+
+	vstack( buffer = 0.2 ) {
+
+		const group = this;
+		if ( group.children.length < 2 ) return group;
+
+		const center = group.children[ 0 ].position.clone();
+		for ( let i = 1; i < group.children.length; i ++ ) {
+
+			group.children[ i ].position
+				.copy( group.children[ i - 1 ].position )
+				.addScaledVector( DOWN, buffer );
+			center.add( group.children[ i ].position );
+
+		}
+
+		center.divideScalar( group.children.length );
+
+		group.children.forEach( ( child ) => child.position.sub( center ) );
+
+	}
+
+	setScale( factor ) {
+
+		this.scale.x = factor;
+		this.scale.y = factor;
+		return this;
+
+	}
+
+	setOpacity( opacity, config = null ) {
+
+		let family = true;
+		if ( config && config.family === false ) {
+
+			family = false;
+
+		}
+
+		if ( family ) {
+
+			this.traverse( ( child ) => {
+
+				if ( child instanceof THREE.Mesh ) {
+
+					child.material.opacity = opacity;
+
+				}
+
+			} );
+
+		} else {
+
+			[ this.stroke, this.fill ].forEach( ( mesh ) => {
+
+				if ( ! mesh ) return;
+				mesh.material.opacity = opacity;
+
+			} );
+
+		}
+
+		return this;
+
+	}
+
+	setInvisible( config = null ) {
+
+		let family = true;
+		if ( config && config.family === false ) {
+
+			family = false;
+
+		}
+
+		return this.setOpacity( 0, { family } );
+
+	}
+
+	setVisible( config = null ) {
+
+		let family = true;
+		if ( config && config.family === false ) {
+
+			family = false;
+
+		}
+
+		return this.setOpacity( 1, { family } );
+
+	}
+
+	setUpright() {
+
+		//TODO: replace with _q1?
+		// const worldQuaternion = _q1;
+		const worldQuaternion = new THREE.Quaternion();
+		this.getWorldQuaternion( worldQuaternion );
+
+		const inverseQuaternion = worldQuaternion.clone().invert();
+		this.quaternion.copy( inverseQuaternion );
+		return this;
+
+	}
+
+	recenter( globalPosition ) {
+
+		const localPosition = globalPosition.clone();
+		this.worldToLocal( globalPosition.clone() );
+		const offset = new THREE.Vector3().subVectors( localPosition, this.position );
+		this.position.add( offset );
+
+		if ( this.points ) {
+
+			// Update stroke and fill geometries.
+			const newPoints = this.points.map( ( point ) => point.clone().sub( offset ) );
+			if ( this.stroke ) {
+
+				this.stroke.geometry.setPoints( newPoints );
+
+			}
+
+			if ( this.fill ) {
+
+				for ( let i = 0; i < this.stroke.geometry.points.length - 1; i ++ ) {
+
+					const { x, y, z } = newPoints[ i ];
+					this.fill.geometry.attributes.position.array[ i * 3 ] = x;
+					this.fill.geometry.attributes.position.array[ i * 3 + 1 ] = y;
+					this.fill.geometry.attributes.position.array[ i * 3 + 2 ] = z;
+
+				}
+
+			}
+
+		}
+
+		// Update children.
+		this.children.forEach( ( child ) => {
+
+			if ( child === this.stroke || child === this.fill ) return;
+			child.position.sub( offset );
+
+		} );
+
+		return this;
+
+	}
+
+	reorient() {}
+
+	pointAlongCurve( shape, t ) {}
+
+	addComponent( name, child ) {
+
+		if ( this.components.has( name ) ) {
+
+			throw new Error(
+				`Failed to add component ${name}: Component or attribute already exists`
+			);
+
+		}
+
+		if ( ! this.components ) {
+
+			this.components = new Map();
+
+		}
+
+		this.components.set( name, child );
+		child.parentComponent = this;
+		this.add( child );
+		Object.defineProperty( this, name, {
+			get: () => this.components.get( name ),
+			set: ( value ) => this.setComponent( name, value ),
+			configurable: true,
+		} );
 		return this;
 
 	}
