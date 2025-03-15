@@ -8187,52 +8187,162 @@ class Object3D extends EventDispatcher {
 
 	}
 
-	vspace( distanceBetween = 0 ) {
+	setScale( factor ) {
 
-		const group = this;
-		if ( group.children.length < 2 ) return group;
+		this.scale.x = factor;
+		this.scale.y = factor;
+		return this;
 
-		const defaultBuffer = 0.2;
-		let defaultSpacing = Number.NEGATIVE_INFINITY;
-		for ( let i = 1; i < group.children.length; i ++ ) {
+	}
 
-			const previous = group.children[ i - 1 ];
-			const previousLowest = furthestInDirection( previous, DOWN );
-			const distanceToBottom = new THREE.Vector3()
-				.subVectors( previousLowest, previous.position )
-				.dot( DOWN );
+	setOpacity( opacity, config = null ) {
 
-			const current = group.children[ i ];
-			const currentTop = furthestInDirection( current, UP );
-			const distanceToTop = new THREE.Vector3()
-				.subVectors( currentTop, current.position )
-				.dot( UP );
+		let family = true;
+		if ( config && config.family === false ) {
 
-			defaultSpacing = Math.max(
-				defaultSpacing,
-				distanceToBottom + distanceToTop + defaultBuffer
+			family = false;
+
+		}
+
+		if ( family ) {
+
+			this.traverse( ( child ) => {
+
+				if ( child instanceof THREE.Mesh ) {
+
+					child.material.opacity = opacity;
+
+				}
+
+			} );
+
+		} else {
+
+			[ this.stroke, this.fill ].forEach( ( mesh ) => {
+
+				if ( ! mesh ) return;
+				mesh.material.opacity = opacity;
+
+			} );
+
+		}
+
+		return this;
+
+	}
+
+	setInvisible( config = null ) {
+
+		let family = true;
+		if ( config && config.family === false ) {
+
+			family = false;
+
+		}
+
+		return this.setOpacity( 0, { family } );
+
+	}
+
+	setVisible( config = null ) {
+
+		let family = true;
+		if ( config && config.family === false ) {
+
+			family = false;
+
+		}
+
+		return this.setOpacity( 1, { family } );
+
+	}
+
+	setUpright() {
+
+		//TODO: replace with _q1?
+		// const worldQuaternion = _q1;
+		const worldQuaternion = new THREE.Quaternion();
+		this.getWorldQuaternion( worldQuaternion );
+
+		const inverseQuaternion = worldQuaternion.clone().invert();
+		this.quaternion.copy( inverseQuaternion );
+		return this;
+
+	}
+
+	recenter( globalPosition ) {
+
+		const localPosition = globalPosition.clone();
+		this.worldToLocal( globalPosition.clone() );
+		const offset = new THREE.Vector3().subVectors( localPosition, this.position );
+		this.position.add( offset );
+
+		if ( this.points ) {
+
+			// Update stroke and fill geometries.
+			const newPoints = this.points.map( ( point ) => point.clone().sub( offset ) );
+			if ( this.stroke ) {
+
+				this.stroke.geometry.setPoints( newPoints );
+
+			}
+
+			if ( this.fill ) {
+
+				for ( let i = 0; i < this.stroke.geometry.points.length - 1; i ++ ) {
+
+					const { x, y, z } = newPoints[ i ];
+					this.fill.geometry.attributes.position.array[ i * 3 ] = x;
+					this.fill.geometry.attributes.position.array[ i * 3 + 1 ] = y;
+					this.fill.geometry.attributes.position.array[ i * 3 + 2 ] = z;
+
+				}
+
+			}
+
+		}
+
+		// Update children.
+		this.children.forEach( ( child ) => {
+
+			if ( child === this.stroke || child === this.fill ) return;
+			child.position.sub( offset );
+
+		} );
+
+		return this;
+
+	}
+
+	reorient() {}
+
+	pointAlongCurve( shape, t ) {}
+
+	addComponent( name, child ) {
+
+		if ( this.components.has( name ) ) {
+
+			throw new Error(
+				`Failed to add component ${name}: Component or attribute already exists`
 			);
 
 		}
 
-		const center = group.children[ 0 ].position.clone();
-		for ( let i = 1; i < group.children.length; i ++ ) {
+		if ( ! this.components ) {
 
-			const previous = group.children[ i - 1 ];
-			const current = group.children[ i ];
-			current.position
-				.copy( previous.position )
-				.addScaledVector(
-					DOWN,
-					distanceBetween ? distanceBetween : defaultSpacing
-				);
-			center.add( group.children[ i ].position );
+			this.components = new Map();
 
 		}
 
-		center.divideScalar( group.children.length );
-
-		group.children.forEach( ( child ) => child.position.sub( center ) );
+		this.components.set( name, child );
+		child.parentComponent = this;
+		this.add( child );
+		Object.defineProperty( this, name, {
+			get: () => this.components.get( name ),
+			set: ( value ) => this.setComponent( name, value ),
+			configurable: true,
+		} );
+		return this;
 
 	}
 
