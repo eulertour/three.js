@@ -6,6 +6,7 @@ import { Euler } from '../math/Euler.js';
 import { Layers } from './Layers.js';
 import { Matrix3 } from '../math/Matrix3.js';
 import * as MathUtils from '../math/MathUtils.js';
+import UpdaterRegistry from './UpdaterRegistry.js';
 
 let _object3DId = 0;
 
@@ -117,6 +118,30 @@ class Object3D extends EventDispatcher {
 		this.animations = [];
 
 		this.userData = {};
+
+		this.updaterRegistry = new UpdaterRegistry();
+
+	}
+
+	addUpdater( nameOrFunc, func ) {
+
+		this.updaterRegistry.register( nameOrFunc, func );
+
+	}
+
+	removeUpdater( nameOrFunc, func ) {
+
+		this.updaterRegistry.unregister( nameOrFunc, func );
+
+	}
+
+	update( dt, t ) {
+
+		for ( const updater of this.updaterRegistry.updaters.values() ) {
+
+			updater( dt, t );
+
+		}
 
 	}
 
