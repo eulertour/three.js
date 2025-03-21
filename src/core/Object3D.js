@@ -1035,6 +1035,26 @@ class Object3D extends EventDispatcher {
 
 	}
 
+	/**
+	 * Adds an updater function to the object and returns the object for chaining
+	 * @param {string|Function} nameOrUpdater - Name of the updater or the updater function
+	 * @param {Function} [updater] - Updater function when a name is provided
+	 * @returns {Object3D} - Returns this object for chaining
+	 */
+	withUpdater(nameOrUpdater, updater) {
+		if (typeof nameOrUpdater === 'string' && updater !== undefined) {
+			// Case: withUpdater("name", (obj, dt, t) => {...})
+			const wrappedUpdater = (dt, t) => updater(this, dt, t);
+			this.addUpdater(nameOrUpdater, wrappedUpdater);
+		} else if (typeof nameOrUpdater === 'function') {
+			// Case: withUpdater((obj, dt, t) => {...})
+			const wrappedUpdater = (dt, t) => nameOrUpdater(this, dt, t);
+			this.addUpdater(wrappedUpdater);
+		}
+		
+		return this;
+	}
+
 }
 
 Object3D.DEFAULT_UP = /*@__PURE__*/ new Vector3( 0, 1, 0 );
