@@ -8110,10 +8110,17 @@ class Vector3 {
 
 		switch ( index ) {
 
-			case 0: this.x = value; break;
-			case 1: this.y = value; break;
-			case 2: this.z = value; break;
-			default: throw new Error( 'index is out of range: ' + index );
+			case 0:
+				this.x = value;
+				break;
+			case 1:
+				this.y = value;
+				break;
+			case 2:
+				this.z = value;
+				break;
+			default:
+				throw new Error( 'index is out of range: ' + index );
 
 		}
 
@@ -8131,10 +8138,14 @@ class Vector3 {
 
 		switch ( index ) {
 
-			case 0: return this.x;
-			case 1: return this.y;
-			case 2: return this.z;
-			default: throw new Error( 'index is out of range: ' + index );
+			case 0:
+				return this.x;
+			case 1:
+				return this.y;
+			case 2:
+				return this.z;
+			default:
+				throw new Error( 'index is out of range: ' + index );
 
 		}
 
@@ -8364,7 +8375,9 @@ class Vector3 {
 	 */
 	applyMatrix3( m ) {
 
-		const x = this.x, y = this.y, z = this.z;
+		const x = this.x,
+			y = this.y,
+			z = this.z;
 		const e = m.elements;
 
 		this.x = e[ 0 ] * x + e[ 3 ] * y + e[ 6 ] * z;
@@ -8397,7 +8410,9 @@ class Vector3 {
 	 */
 	applyMatrix4( m ) {
 
-		const x = this.x, y = this.y, z = this.z;
+		const x = this.x,
+			y = this.y,
+			z = this.z;
 		const e = m.elements;
 
 		const w = 1 / ( e[ 3 ] * x + e[ 7 ] * y + e[ 11 ] * z + e[ 15 ] );
@@ -8420,8 +8435,13 @@ class Vector3 {
 
 		// quaternion q is assumed to have unit length
 
-		const vx = this.x, vy = this.y, vz = this.z;
-		const qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+		const vx = this.x,
+			vy = this.y,
+			vz = this.z;
+		const qx = q.x,
+			qy = q.y,
+			qz = q.z,
+			qw = q.w;
 
 		// t = 2 * cross( q.xyz, v );
 		const tx = 2 * ( qy * vz - qz * vy );
@@ -8446,7 +8466,9 @@ class Vector3 {
 	 */
 	project( camera ) {
 
-		return this.applyMatrix4( camera.matrixWorldInverse ).applyMatrix4( camera.projectionMatrix );
+		return this.applyMatrix4( camera.matrixWorldInverse ).applyMatrix4(
+			camera.projectionMatrix,
+		);
 
 	}
 
@@ -8459,7 +8481,9 @@ class Vector3 {
 	 */
 	unproject( camera ) {
 
-		return this.applyMatrix4( camera.projectionMatrixInverse ).applyMatrix4( camera.matrixWorld );
+		return this.applyMatrix4( camera.projectionMatrixInverse ).applyMatrix4(
+			camera.matrixWorld,
+		);
 
 	}
 
@@ -8475,7 +8499,9 @@ class Vector3 {
 		// input: THREE.Matrix4 affine matrix
 		// vector interpreted as a direction
 
-		const x = this.x, y = this.y, z = this.z;
+		const x = this.x,
+			y = this.y,
+			z = this.z;
 		const e = m.elements;
 
 		this.x = e[ 0 ] * x + e[ 4 ] * y + e[ 8 ] * z;
@@ -8604,7 +8630,9 @@ class Vector3 {
 
 		const length = this.length();
 
-		return this.divideScalar( length || 1 ).multiplyScalar( clamp( length, min, max ) );
+		return this.divideScalar( length || 1 ).multiplyScalar(
+			clamp( length, min, max ),
+		);
 
 	}
 
@@ -8819,8 +8847,12 @@ class Vector3 {
 	 */
 	crossVectors( a, b ) {
 
-		const ax = a.x, ay = a.y, az = a.z;
-		const bx = b.x, by = b.y, bz = b.z;
+		const ax = a.x,
+			ay = a.y,
+			az = a.z;
+		const bx = b.x,
+			by = b.y,
+			bz = b.z;
 
 		this.x = ay * bz - az * by;
 		this.y = az * bx - ax * bz;
@@ -8874,6 +8906,37 @@ class Vector3 {
 		return this.sub( _vector$c.copy( normal ).multiplyScalar( 2 * this.dot( normal ) ) );
 
 	}
+
+	rotate90() {
+
+		return this.applyAxisAngle( Vector3.OUT, Math.PI / 2 );
+
+	}
+
+	rotate180() {
+
+		return this.applyAxisAngle( Vector3.OUT, Math.PI );
+
+	}
+
+	rotate270() {
+
+		return this.applyAxisAngle( Vector3.OUT, - Math.PI / 2 );
+
+	}
+
+	rotateZ( angle ) {
+
+		return this.applyAxisAngle( Vector3.OUT, angle );
+
+	}
+
+	transformBetweenSpaces( from, to ) {
+
+		return to.worldToLocal( from.localToWorld( this ) );
+
+	}
+
 	/**
 	 * Returns the angle between the given vector and this instance in radians.
 	 *
@@ -8916,7 +8979,9 @@ class Vector3 {
 	 */
 	distanceToSquared( v ) {
 
-		const dx = this.x - v.x, dy = this.y - v.y, dz = this.z - v.z;
+		const dx = this.x - v.x,
+			dy = this.y - v.y,
+			dz = this.z - v.z;
 
 		return dx * dx + dy * dy + dz * dz;
 
@@ -8930,7 +8995,9 @@ class Vector3 {
 	 */
 	manhattanDistanceTo( v ) {
 
-		return Math.abs( this.x - v.x ) + Math.abs( this.y - v.y ) + Math.abs( this.z - v.z );
+		return (
+			Math.abs( this.x - v.x ) + Math.abs( this.y - v.y ) + Math.abs( this.z - v.z )
+		);
 
 	}
 
@@ -9103,7 +9170,7 @@ class Vector3 {
 	 */
 	equals( v ) {
 
-		return ( ( v.x === this.x ) && ( v.y === this.y ) && ( v.z === this.z ) );
+		return v.x === this.x && v.y === this.y && v.z === this.z;
 
 	}
 
@@ -9209,6 +9276,14 @@ class Vector3 {
 
 const _vector$c = /*@__PURE__*/ new Vector3();
 const _quaternion$4 = /*@__PURE__*/ new Quaternion();
+
+Vector3.ORIGIN = Object.freeze( new Vector3( 0, 0, 0 ) );
+Vector3.LEFT = Object.freeze( new Vector3( -1, 0, 0 ) );
+Vector3.RIGHT = Object.freeze( new Vector3( 1, 0, 0 ) );
+Vector3.DOWN = Object.freeze( new Vector3( 0, -1, 0 ) );
+Vector3.UP = Object.freeze( new Vector3( 0, 1, 0 ) );
+Vector3.IN = Object.freeze( new Vector3( 0, 0, -1 ) );
+Vector3.OUT = Object.freeze( new Vector3( 0, 0, 1 ) );
 
 /**
  * Represents an axis-aligned bounding box (AABB) in 3D space.
@@ -12860,6 +12935,90 @@ class Layers {
 
 }
 
+class UpdaterRegistry {
+
+	constructor( owner ) {
+
+		this.namedUpdaters = new Map();
+		this.updaters = [];
+		this.owner = owner;
+
+	}
+
+	register( nameOrFunc, func ) {
+
+		if ( typeof nameOrFunc === 'string' ) {
+
+			this.registerByName( nameOrFunc, func );
+
+		} else {
+
+			this.registerByFunction( nameOrFunc );
+
+		}
+
+	}
+
+	registerByName( name, func ) {
+
+		this.namedUpdaters.set( name, func );
+		this.registerByFunction( func );
+
+	}
+
+	registerByFunction( func ) {
+
+		this.updaters.push( func );
+
+	}
+
+	unregister( nameOrFunc ) {
+
+		if ( typeof nameOrFunc === 'string' ) {
+
+			return this.unregisterByName( nameOrFunc );
+
+		} else {
+
+			return this.unregisterByFunction( nameOrFunc );
+
+		}
+
+	}
+
+	unregisterByName( name ) {
+
+		const updaterToRemove = this.namedUpdaters.get( name );
+		if ( ! updaterToRemove ) {
+
+			return false;
+
+		}
+
+		this.namedUpdaters.delete( name );
+		return this.unregisterByFunction( updaterToRemove );
+
+	}
+
+	unregisterByFunction( func ) {
+
+		const updaterToRemove = this.updaters.find( ( updater ) => updater === func );
+
+		if ( ! updaterToRemove ) {
+
+			return false;
+
+		}
+
+		this.updaters = this.updaters.filter(
+			( updater ) => updater !== updaterToRemove,
+		);
+		return true;
+
+	}
+
+}
+
 let _object3DId = 0;
 
 const _v1$4 = /*@__PURE__*/ new Vector3();
@@ -13020,7 +13179,7 @@ class Object3D extends EventDispatcher {
 			position: {
 				configurable: true,
 				enumerable: true,
-				value: position
+				value: position,
 			},
 			/**
 			 * Represents the object's local rotation as Euler angles, in radians.
@@ -13032,7 +13191,7 @@ class Object3D extends EventDispatcher {
 			rotation: {
 				configurable: true,
 				enumerable: true,
-				value: rotation
+				value: rotation,
 			},
 			/**
 			 * Represents the object's local rotation as Quaternions.
@@ -13043,7 +13202,7 @@ class Object3D extends EventDispatcher {
 			quaternion: {
 				configurable: true,
 				enumerable: true,
-				value: quaternion
+				value: quaternion,
 			},
 			/**
 			 * Represents the object's local scale.
@@ -13055,7 +13214,7 @@ class Object3D extends EventDispatcher {
 			scale: {
 				configurable: true,
 				enumerable: true,
-				value: scale
+				value: scale,
 			},
 			/**
 			 * Represents the object's model-view matrix.
@@ -13064,7 +13223,7 @@ class Object3D extends EventDispatcher {
 			 * @type {Matrix4}
 			 */
 			modelViewMatrix: {
-				value: new Matrix4()
+				value: new Matrix4(),
 			},
 			/**
 			 * Represents the object's normal matrix.
@@ -13073,8 +13232,8 @@ class Object3D extends EventDispatcher {
 			 * @type {Matrix3}
 			 */
 			normalMatrix: {
-				value: new Matrix3()
-			}
+				value: new Matrix3(),
+			},
 		} );
 
 		/**
@@ -13213,6 +13372,30 @@ class Object3D extends EventDispatcher {
 		 * @type {Object}
 		 */
 		this.userData = {};
+
+		this.updaterRegistry = new UpdaterRegistry();
+
+	}
+
+	addUpdater( nameOrFunc, func ) {
+
+		this.updaterRegistry.register( nameOrFunc, func );
+
+	}
+
+	removeUpdater( nameOrFunc, func ) {
+
+		this.updaterRegistry.unregister( nameOrFunc, func );
+
+	}
+
+	update( dt, t ) {
+
+		for ( const updater of this.updaterRegistry.updaters.values() ) {
+
+			updater( dt, t );
+
+		}
 
 	}
 
@@ -13586,7 +13769,10 @@ class Object3D extends EventDispatcher {
 
 		if ( object === this ) {
 
-			console.error( 'THREE.Object3D.add: object can\'t be added as a child of itself.', object );
+			console.error(
+				'THREE.Object3D.add: object can\'t be added as a child of itself.',
+				object,
+			);
 			return this;
 
 		}
@@ -13605,7 +13791,10 @@ class Object3D extends EventDispatcher {
 
 		} else {
 
-			console.error( 'THREE.Object3D.add: object not an instance of THREE.Object3D.', object );
+			console.error(
+				'THREE.Object3D.add: object not an instance of THREE.Object3D.',
+				object,
+			);
 
 		}
 
@@ -13685,7 +13874,7 @@ class Object3D extends EventDispatcher {
 	 */
 	clear() {
 
-		return this.remove( ... this.children );
+		return this.remove( ...this.children );
 
 	}
 
@@ -13990,7 +14179,10 @@ class Object3D extends EventDispatcher {
 
 				} else {
 
-					this.matrixWorld.multiplyMatrices( this.parent.matrixWorld, this.matrix );
+					this.matrixWorld.multiplyMatrices(
+						this.parent.matrixWorld,
+						this.matrix,
+					);
 
 				}
 
@@ -14077,7 +14269,7 @@ class Object3D extends EventDispatcher {
 	toJSON( meta ) {
 
 		// meta is a string when called from JSON.stringify
-		const isRootObject = ( meta === undefined || typeof meta === 'string' );
+		const isRootObject = meta === undefined || typeof meta === 'string';
 
 		const output = {};
 
@@ -14095,13 +14287,13 @@ class Object3D extends EventDispatcher {
 				shapes: {},
 				skeletons: {},
 				animations: {},
-				nodes: {}
+				nodes: {},
 			};
 
 			output.metadata = {
 				version: 4.6,
 				type: 'Object',
-				generator: 'Object3D.toJSON'
+				generator: 'Object3D.toJSON',
 			};
 
 		}
@@ -14134,7 +14326,8 @@ class Object3D extends EventDispatcher {
 			object.type = 'InstancedMesh';
 			object.count = this.count;
 			object.instanceMatrix = this.instanceMatrix.toJSON();
-			if ( this.instanceColor !== null ) object.instanceColor = this.instanceColor.toJSON();
+			if ( this.instanceColor !== null )
+				object.instanceColor = this.instanceColor.toJSON();
 
 		}
 
@@ -14149,14 +14342,14 @@ class Object3D extends EventDispatcher {
 
 			object.visibility = this._visibility;
 			object.active = this._active;
-			object.bounds = this._bounds.map( bound => ( {
+			object.bounds = this._bounds.map( ( bound ) => ( {
 				boxInitialized: bound.boxInitialized,
 				boxMin: bound.box.min.toArray(),
 				boxMax: bound.box.max.toArray(),
 
 				sphereInitialized: bound.sphereInitialized,
 				sphereRadius: bound.sphere.radius,
-				sphereCenter: bound.sphere.center.toArray()
+				sphereCenter: bound.sphere.center.toArray(),
 			} ) );
 
 			object.maxInstanceCount = this._maxInstanceCount;
@@ -14168,13 +14361,14 @@ class Object3D extends EventDispatcher {
 
 			object.matricesTexture = this._matricesTexture.toJSON( meta );
 
-			if ( this._colorsTexture !== null ) object.colorsTexture = this._colorsTexture.toJSON( meta );
+			if ( this._colorsTexture !== null )
+				object.colorsTexture = this._colorsTexture.toJSON( meta );
 
 			if ( this.boundingSphere !== null ) {
 
 				object.boundingSphere = {
 					center: object.boundingSphere.center.toArray(),
-					radius: object.boundingSphere.radius
+					radius: object.boundingSphere.radius,
 				};
 
 			}
@@ -14183,7 +14377,7 @@ class Object3D extends EventDispatcher {
 
 				object.boundingBox = {
 					min: object.boundingBox.min.toArray(),
-					max: object.boundingBox.max.toArray()
+					max: object.boundingBox.max.toArray(),
 				};
 
 			}
@@ -14220,7 +14414,11 @@ class Object3D extends EventDispatcher {
 
 			}
 
-			if ( this.environment && this.environment.isTexture && this.environment.isRenderTargetTexture !== true ) {
+			if (
+				this.environment &&
+				this.environment.isTexture &&
+				this.environment.isRenderTargetTexture !== true
+			) {
 
 				object.environment = this.environment.toJSON( meta ).uuid;
 
@@ -42947,7 +43145,7 @@ class Loader {
 		 * The [request header]{@link https://developer.mozilla.org/en-US/docs/Glossary/Request_header}
 		 * used in HTTP request.
 		 *
-		 * @type {Object}
+		 * @type {Object<string, any>}
 		 */
 		this.requestHeader = {};
 
@@ -42959,8 +43157,8 @@ class Loader {
 	 *
 	 * @param {string} url - The path/URL of the file to be loaded.
 	 * @param {Function} onLoad - Executed when the loading process has been finished.
-	 * @param {onProgressCallback} onProgress - Executed while the loading is in progress.
-	 * @param {onErrorCallback} onError - Executed when errors occur.
+	 * @param {onProgressCallback} [onProgress] - Executed while the loading is in progress.
+	 * @param {onErrorCallback} [onError] - Executed when errors occur.
 	 */
 	load( /* url, onLoad, onProgress, onError */ ) {}
 
@@ -42968,7 +43166,7 @@ class Loader {
 	 * A async version of {@link Loader#load}.
 	 *
 	 * @param {string} url - The path/URL of the file to be loaded.
-	 * @param {onProgressCallback} onProgress - Executed while the loading is in progress.
+	 * @param {onProgressCallback} [onProgress] - Executed while the loading is in progress.
 	 * @return {Promise} A Promise that resolves when the asset has been loaded.
 	 */
 	loadAsync( url, onProgress ) {
@@ -43150,8 +43348,8 @@ class FileLoader extends Loader {
 	 *
 	 * @param {string} url - The path/URL of the file to be loaded. This can also be a data URI.
 	 * @param {function(any)} onLoad - Executed when the loading process has been finished.
-	 * @param {onProgressCallback} onProgress - Executed while the loading is in progress.
-	 * @param {onErrorCallback} onError - Executed when errors occur.
+	 * @param {onProgressCallback} [onProgress] - Executed while the loading is in progress.
+	 * @param {onErrorCallback} [onError] - Executed when errors occur.
 	 * @return {any|undefined} The cached resource if available.
 	 */
 	load( url, onLoad, onProgress, onError ) {

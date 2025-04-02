@@ -158,10 +158,17 @@ class Vector3 {
 
 		switch ( index ) {
 
-			case 0: this.x = value; break;
-			case 1: this.y = value; break;
-			case 2: this.z = value; break;
-			default: throw new Error( 'index is out of range: ' + index );
+			case 0:
+				this.x = value;
+				break;
+			case 1:
+				this.y = value;
+				break;
+			case 2:
+				this.z = value;
+				break;
+			default:
+				throw new Error( 'index is out of range: ' + index );
 
 		}
 
@@ -179,10 +186,14 @@ class Vector3 {
 
 		switch ( index ) {
 
-			case 0: return this.x;
-			case 1: return this.y;
-			case 2: return this.z;
-			default: throw new Error( 'index is out of range: ' + index );
+			case 0:
+				return this.x;
+			case 1:
+				return this.y;
+			case 2:
+				return this.z;
+			default:
+				throw new Error( 'index is out of range: ' + index );
 
 		}
 
@@ -412,7 +423,9 @@ class Vector3 {
 	 */
 	applyMatrix3( m ) {
 
-		const x = this.x, y = this.y, z = this.z;
+		const x = this.x,
+			y = this.y,
+			z = this.z;
 		const e = m.elements;
 
 		this.x = e[ 0 ] * x + e[ 3 ] * y + e[ 6 ] * z;
@@ -445,7 +458,9 @@ class Vector3 {
 	 */
 	applyMatrix4( m ) {
 
-		const x = this.x, y = this.y, z = this.z;
+		const x = this.x,
+			y = this.y,
+			z = this.z;
 		const e = m.elements;
 
 		const w = 1 / ( e[ 3 ] * x + e[ 7 ] * y + e[ 11 ] * z + e[ 15 ] );
@@ -468,8 +483,13 @@ class Vector3 {
 
 		// quaternion q is assumed to have unit length
 
-		const vx = this.x, vy = this.y, vz = this.z;
-		const qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+		const vx = this.x,
+			vy = this.y,
+			vz = this.z;
+		const qx = q.x,
+			qy = q.y,
+			qz = q.z,
+			qw = q.w;
 
 		// t = 2 * cross( q.xyz, v );
 		const tx = 2 * ( qy * vz - qz * vy );
@@ -494,7 +514,9 @@ class Vector3 {
 	 */
 	project( camera ) {
 
-		return this.applyMatrix4( camera.matrixWorldInverse ).applyMatrix4( camera.projectionMatrix );
+		return this.applyMatrix4( camera.matrixWorldInverse ).applyMatrix4(
+			camera.projectionMatrix,
+		);
 
 	}
 
@@ -507,7 +529,9 @@ class Vector3 {
 	 */
 	unproject( camera ) {
 
-		return this.applyMatrix4( camera.projectionMatrixInverse ).applyMatrix4( camera.matrixWorld );
+		return this.applyMatrix4( camera.projectionMatrixInverse ).applyMatrix4(
+			camera.matrixWorld,
+		);
 
 	}
 
@@ -523,7 +547,9 @@ class Vector3 {
 		// input: THREE.Matrix4 affine matrix
 		// vector interpreted as a direction
 
-		const x = this.x, y = this.y, z = this.z;
+		const x = this.x,
+			y = this.y,
+			z = this.z;
 		const e = m.elements;
 
 		this.x = e[ 0 ] * x + e[ 4 ] * y + e[ 8 ] * z;
@@ -652,7 +678,9 @@ class Vector3 {
 
 		const length = this.length();
 
-		return this.divideScalar( length || 1 ).multiplyScalar( clamp( length, min, max ) );
+		return this.divideScalar( length || 1 ).multiplyScalar(
+			clamp( length, min, max ),
+		);
 
 	}
 
@@ -867,8 +895,12 @@ class Vector3 {
 	 */
 	crossVectors( a, b ) {
 
-		const ax = a.x, ay = a.y, az = a.z;
-		const bx = b.x, by = b.y, bz = b.z;
+		const ax = a.x,
+			ay = a.y,
+			az = a.z;
+		const bx = b.x,
+			by = b.y,
+			bz = b.z;
 
 		this.x = ay * bz - az * by;
 		this.y = az * bx - ax * bz;
@@ -922,6 +954,37 @@ class Vector3 {
 		return this.sub( _vector.copy( normal ).multiplyScalar( 2 * this.dot( normal ) ) );
 
 	}
+
+	rotate90() {
+
+		return this.applyAxisAngle( Vector3.OUT, Math.PI / 2 );
+
+	}
+
+	rotate180() {
+
+		return this.applyAxisAngle( Vector3.OUT, Math.PI );
+
+	}
+
+	rotate270() {
+
+		return this.applyAxisAngle( Vector3.OUT, - Math.PI / 2 );
+
+	}
+
+	rotateZ( angle ) {
+
+		return this.applyAxisAngle( Vector3.OUT, angle );
+
+	}
+
+	transformBetweenSpaces( from, to ) {
+
+		return to.worldToLocal( from.localToWorld( this ) );
+
+	}
+
 	/**
 	 * Returns the angle between the given vector and this instance in radians.
 	 *
@@ -964,7 +1027,9 @@ class Vector3 {
 	 */
 	distanceToSquared( v ) {
 
-		const dx = this.x - v.x, dy = this.y - v.y, dz = this.z - v.z;
+		const dx = this.x - v.x,
+			dy = this.y - v.y,
+			dz = this.z - v.z;
 
 		return dx * dx + dy * dy + dz * dz;
 
@@ -978,7 +1043,9 @@ class Vector3 {
 	 */
 	manhattanDistanceTo( v ) {
 
-		return Math.abs( this.x - v.x ) + Math.abs( this.y - v.y ) + Math.abs( this.z - v.z );
+		return (
+			Math.abs( this.x - v.x ) + Math.abs( this.y - v.y ) + Math.abs( this.z - v.z )
+		);
 
 	}
 
@@ -1151,7 +1218,7 @@ class Vector3 {
 	 */
 	equals( v ) {
 
-		return ( ( v.x === this.x ) && ( v.y === this.y ) && ( v.z === this.z ) );
+		return v.x === this.x && v.y === this.y && v.z === this.z;
 
 	}
 
@@ -1257,5 +1324,13 @@ class Vector3 {
 
 const _vector = /*@__PURE__*/ new Vector3();
 const _quaternion = /*@__PURE__*/ new Quaternion();
+
+Vector3.ORIGIN = Object.freeze( new Vector3( 0, 0, 0 ) );
+Vector3.LEFT = Object.freeze( new Vector3( - 1, 0, 0 ) );
+Vector3.RIGHT = Object.freeze( new Vector3( 1, 0, 0 ) );
+Vector3.DOWN = Object.freeze( new Vector3( 0, - 1, 0 ) );
+Vector3.UP = Object.freeze( new Vector3( 0, 1, 0 ) );
+Vector3.IN = Object.freeze( new Vector3( 0, 0, - 1 ) );
+Vector3.OUT = Object.freeze( new Vector3( 0, 0, 1 ) );
 
 export { Vector3 };

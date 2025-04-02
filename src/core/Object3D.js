@@ -6,6 +6,7 @@ import { Euler } from '../math/Euler.js';
 import { Layers } from './Layers.js';
 import { Matrix3 } from '../math/Matrix3.js';
 import { generateUUID } from '../math/MathUtils.js';
+import UpdaterRegistry from './UpdaterRegistry';
 
 let _object3DId = 0;
 
@@ -167,7 +168,7 @@ class Object3D extends EventDispatcher {
 			position: {
 				configurable: true,
 				enumerable: true,
-				value: position
+				value: position,
 			},
 			/**
 			 * Represents the object's local rotation as Euler angles, in radians.
@@ -179,7 +180,7 @@ class Object3D extends EventDispatcher {
 			rotation: {
 				configurable: true,
 				enumerable: true,
-				value: rotation
+				value: rotation,
 			},
 			/**
 			 * Represents the object's local rotation as Quaternions.
@@ -190,7 +191,7 @@ class Object3D extends EventDispatcher {
 			quaternion: {
 				configurable: true,
 				enumerable: true,
-				value: quaternion
+				value: quaternion,
 			},
 			/**
 			 * Represents the object's local scale.
@@ -202,7 +203,7 @@ class Object3D extends EventDispatcher {
 			scale: {
 				configurable: true,
 				enumerable: true,
-				value: scale
+				value: scale,
 			},
 			/**
 			 * Represents the object's model-view matrix.
@@ -211,7 +212,7 @@ class Object3D extends EventDispatcher {
 			 * @type {Matrix4}
 			 */
 			modelViewMatrix: {
-				value: new Matrix4()
+				value: new Matrix4(),
 			},
 			/**
 			 * Represents the object's normal matrix.
@@ -220,8 +221,8 @@ class Object3D extends EventDispatcher {
 			 * @type {Matrix3}
 			 */
 			normalMatrix: {
-				value: new Matrix3()
-			}
+				value: new Matrix3(),
+			},
 		} );
 
 		/**
@@ -360,6 +361,30 @@ class Object3D extends EventDispatcher {
 		 * @type {Object}
 		 */
 		this.userData = {};
+
+		this.updaterRegistry = new UpdaterRegistry();
+
+	}
+
+	addUpdater( nameOrFunc, func ) {
+
+		this.updaterRegistry.register( nameOrFunc, func );
+
+	}
+
+	removeUpdater( nameOrFunc, func ) {
+
+		this.updaterRegistry.unregister( nameOrFunc, func );
+
+	}
+
+	update( dt, t ) {
+
+		for ( const updater of this.updaterRegistry.updaters.values() ) {
+
+			updater( dt, t );
+
+		}
 
 	}
 
@@ -733,7 +758,10 @@ class Object3D extends EventDispatcher {
 
 		if ( object === this ) {
 
-			console.error( 'THREE.Object3D.add: object can\'t be added as a child of itself.', object );
+			console.error(
+				'THREE.Object3D.add: object can\'t be added as a child of itself.',
+				object,
+			);
 			return this;
 
 		}
@@ -752,7 +780,10 @@ class Object3D extends EventDispatcher {
 
 		} else {
 
-			console.error( 'THREE.Object3D.add: object not an instance of THREE.Object3D.', object );
+			console.error(
+				'THREE.Object3D.add: object not an instance of THREE.Object3D.',
+				object,
+			);
 
 		}
 
@@ -832,7 +863,7 @@ class Object3D extends EventDispatcher {
 	 */
 	clear() {
 
-		return this.remove( ... this.children );
+		return this.remove( ...this.children );
 
 	}
 
@@ -1137,7 +1168,10 @@ class Object3D extends EventDispatcher {
 
 				} else {
 
-					this.matrixWorld.multiplyMatrices( this.parent.matrixWorld, this.matrix );
+					this.matrixWorld.multiplyMatrices(
+						this.parent.matrixWorld,
+						this.matrix,
+					);
 
 				}
 
@@ -1224,7 +1258,7 @@ class Object3D extends EventDispatcher {
 	toJSON( meta ) {
 
 		// meta is a string when called from JSON.stringify
-		const isRootObject = ( meta === undefined || typeof meta === 'string' );
+		const isRootObject = meta === undefined || typeof meta === 'string';
 
 		const output = {};
 
@@ -1242,13 +1276,13 @@ class Object3D extends EventDispatcher {
 				shapes: {},
 				skeletons: {},
 				animations: {},
-				nodes: {}
+				nodes: {},
 			};
 
 			output.metadata = {
 				version: 4.6,
 				type: 'Object',
-				generator: 'Object3D.toJSON'
+				generator: 'Object3D.toJSON',
 			};
 
 		}
@@ -1281,7 +1315,8 @@ class Object3D extends EventDispatcher {
 			object.type = 'InstancedMesh';
 			object.count = this.count;
 			object.instanceMatrix = this.instanceMatrix.toJSON();
-			if ( this.instanceColor !== null ) object.instanceColor = this.instanceColor.toJSON();
+			if ( this.instanceColor !== null )
+				object.instanceColor = this.instanceColor.toJSON();
 
 		}
 
@@ -1296,14 +1331,14 @@ class Object3D extends EventDispatcher {
 
 			object.visibility = this._visibility;
 			object.active = this._active;
-			object.bounds = this._bounds.map( bound => ( {
+			object.bounds = this._bounds.map( ( bound ) => ( {
 				boxInitialized: bound.boxInitialized,
 				boxMin: bound.box.min.toArray(),
 				boxMax: bound.box.max.toArray(),
 
 				sphereInitialized: bound.sphereInitialized,
 				sphereRadius: bound.sphere.radius,
-				sphereCenter: bound.sphere.center.toArray()
+				sphereCenter: bound.sphere.center.toArray(),
 			} ) );
 
 			object.maxInstanceCount = this._maxInstanceCount;
@@ -1315,13 +1350,14 @@ class Object3D extends EventDispatcher {
 
 			object.matricesTexture = this._matricesTexture.toJSON( meta );
 
-			if ( this._colorsTexture !== null ) object.colorsTexture = this._colorsTexture.toJSON( meta );
+			if ( this._colorsTexture !== null )
+				object.colorsTexture = this._colorsTexture.toJSON( meta );
 
 			if ( this.boundingSphere !== null ) {
 
 				object.boundingSphere = {
 					center: object.boundingSphere.center.toArray(),
-					radius: object.boundingSphere.radius
+					radius: object.boundingSphere.radius,
 				};
 
 			}
@@ -1330,7 +1366,7 @@ class Object3D extends EventDispatcher {
 
 				object.boundingBox = {
 					min: object.boundingBox.min.toArray(),
-					max: object.boundingBox.max.toArray()
+					max: object.boundingBox.max.toArray(),
 				};
 
 			}
@@ -1367,7 +1403,11 @@ class Object3D extends EventDispatcher {
 
 			}
 
-			if ( this.environment && this.environment.isTexture && this.environment.isRenderTargetTexture !== true ) {
+			if (
+				this.environment &&
+				this.environment.isTexture &&
+				this.environment.isRenderTargetTexture !== true
+			) {
 
 				object.environment = this.environment.toJSON( meta ).uuid;
 
